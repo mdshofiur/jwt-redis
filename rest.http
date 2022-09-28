@@ -1,0 +1,45 @@
+
+GET http://localhost:3000/
+
+###
+GET http://localhost:3000/dsfsddsfds
+
+
+# register route
+### 
+POST  http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+    "email": "testaaassa@example.com",
+    "password": "1234"
+}
+
+# login route
+### 
+POST  http://localhost:3000/api/auth/login
+Content-Type: application/json
+Authorization: Bearar eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MzMzZWEyNzgyMmFmMmI4ZTc2MTdkNzMiLCJpYXQiOjE2NjQzNDY2NjMsImV4cCI6MTY2NDM0NjY4M30.WEssLfGUu550DLOhKa6ujywFyhJdW91aPg054QNLt3Y
+
+
+{
+    "email": "test@example.com",             
+    "password": "1234"
+}
+
+
+# refresh-token route
+### 
+POST  http://localhost:3000/api/auth/refresh-token
+Content-Type: application/json
+
+{
+    "refreshToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MzMzZDlhMjk0NTBlYTI5YWVhOTFlYjEiLCJpYXQiOjE2NjQzNDY2NzYsImV4cCI6MTY5NTkwNDI3Nn0.YaewkdkCkNcjDFwlbxWt15Ze_M9k24PiCnMeivBytQw"
+}
+
+
+
+
+# refresh-token route
+### 
+DELETE  http://localhost:3000/api/auth/delete
