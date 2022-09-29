@@ -11,7 +11,7 @@ POST  http://localhost:3000/api/auth/register
 Content-Type: application/json
 
 {
-    "email": "testaaassa@example.com",
+    "email": "testsdafasdssas@example.com",
     "password": "1234"
 }
 
@@ -19,11 +19,11 @@ Content-Type: application/json
 ### 
 POST  http://localhost:3000/api/auth/login
 Content-Type: application/json
-Authorization: Bearar eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MzMzZWEyNzgyMmFmMmI4ZTc2MTdkNzMiLCJpYXQiOjE2NjQzNDY2NjMsImV4cCI6MTY2NDM0NjY4M30.WEssLfGUu550DLOhKa6ujywFyhJdW91aPg054QNLt3Y
+Authorization: Bearar eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MzM0N2MwZDEzMGU4NDg5MTdkZjRlODYiLCJpYXQiOjE2NjQ0NTE5NzEsImV4cCI6MTY2NDUzODM3MX0.AOgGy-3czZwEAZnCwg0zzhlwYwTlt_Kuiv69yWZgVIM
 
 
 {
-    "email": "test@example.com",             
+    "email": "testsdafasssas@example.com",      
     "password": "1234"
 }
 
@@ -34,7 +34,7 @@ POST  http://localhost:3000/api/auth/refresh-token
 Content-Type: application/json
 
 {
-    "refreshToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MzMzZDlhMjk0NTBlYTI5YWVhOTFlYjEiLCJpYXQiOjE2NjQzNDY2NzYsImV4cCI6MTY5NTkwNDI3Nn0.YaewkdkCkNcjDFwlbxWt15Ze_M9k24PiCnMeivBytQw"
+    "refreshToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MzM0N2MwZDEzMGU4NDg5MTdkZjRlODYiLCJpYXQiOjE2NjQ0NTI2NjksImV4cCI6MTY5NjAxMDI2OX0.-RvQ4z2hasP0SDlp-UyrDxp6tOWPd2QV53cgCmTu1aQ"
 }
 
 
@@ -42,4 +42,10 @@ Content-Type: application/json
 
 # refresh-token route
 ### 
-DELETE  http://localhost:3000/api/auth/delete
+DELETE  http://localhost:3000/api/auth/logout
+Content-Type: application/json
+
+
+{
+    "refreshToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MzM0N2MwZDEzMGU4NDg5MTdkZjRlODYiLCJpYXQiOjE2NjQ0NTM5NjEsImV4cCI6MTY5NjAxMTU2MX0.R5PO-bGpG2urSqWeeEEy06fDQufE9NtrT0u_zLU-WPw"
+}

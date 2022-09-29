@@ -2,9 +2,16 @@ const express = require("express");
 const morgan = require("morgan");
 const createError = require("http-errors");
 const  AuthRoute  = require("./Routes/AuthRoute");
+const client = require("./utils/init_redis");
 require("./utils/connect");
 require("dotenv").config();
+require("./utils/init_redis");
 
+// clients.SET("foo", "bar");
+
+// clients.GET("foo", (err,value) => {
+//  console.log(value)
+// });
 
 const app = express();
 const port = 3000;

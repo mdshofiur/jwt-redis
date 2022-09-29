@@ -3,7 +3,7 @@ const router = express.Router();
 const createError = require('http-errors');
 const  UserModel  = require("../Model/UserModel");
 const jwt = require("jsonwebtoken");
-
+const client = require("./../utils/init_redis");
 
 
 router.post("/register", async (req, res, next) => {
@@ -24,7 +24,7 @@ router.post("/register", async (req, res, next) => {
    }
 });
 
-//  verify a token
+//  verify a Access token
 const verifyAccessToken = (req, res, next) => {
   if (!req.headers["authorization"]) return next(createError.Unauthorized());
   const authHeader = req.headers["authorization"];
@@ -42,7 +42,7 @@ const verifyAccessToken = (req, res, next) => {
 
 
 // login
-router.post("/login",verifyAccessToken, async (req, res, next) => {
+router.post("/login", verifyAccessToken, async (req, res, next) => {
   try {
     const user = await UserModel.findOne({ email: req.body.email });
     if (!user) throw createError.NotFound("Username/password not valid");
@@ -64,19 +64,40 @@ router.post("/refresh-token", async (req, res, next) => {
     const { refreshToken } = req.body;
     if (!refreshToken) throw createError.BadRequest();
     const userId = await verifyRefreshToken(refreshToken);
-    const AccessToken = createAccessToken(userId);
-    const RefreshToken = createRefreshToken(userId);
-    res.send({ "AccessToken": AccessToken, "RefreshToken": RefreshToken });
+    client.SET(
+      userId,
+      createRefreshToken(userId),"EX",30*24*60*60,(err, replay) => {
+        if (err) {
+          throw createError.InternalServerError();
+        }
+        console.log("replay", replay);
+        res.send({
+          accessToken: createAccessToken(userId),
+          RefreshToken: createRefreshToken(userId),
+        });
+      }
+    );
   } catch (err) {
     next(err);
   }
 });
 
+
+//  verify a Refresh token
 const verifyRefreshToken = (refreshToken) => { 
   return new Promise((resolve, reject) => {
     jwt.verify(refreshToken, process.env.ACCESS_PRIVATE_TOKEN, (err, payload) => {
       if (err) return reject(createError.Unauthorized());
       const userId = payload.userId;
+         client.GET(userId, (err, result) => {
+           if (err) {
+             console.log(err.message);
+             reject(createError.InternalServerError());
+             return;
+           }
+           if (refreshToken === result) return resolve(userId);
+           reject(createError.Unauthorized());
+         });
       resolve(userId);
     });
    });
@@ -87,7 +108,7 @@ const verifyRefreshToken = (refreshToken) => {
 // create access Token
 const createAccessToken = (userId) => {
   return jwt.sign({ userId }, process.env.ACCESS_PUBLIC_TOKEN, {
-    expiresIn: "20s",
+    expiresIn: "1day",
   });
 };        
 
@@ -99,7 +120,73 @@ const createRefreshToken = (userId) => {
 };
 
 
+router.delete("/logout", async (req, res) => {
+  const { refreshToken } = req.body;
+  try {
+    if (!refreshToken) throw createError.BadRequest();
+    const userId = await verifyRefreshToken(refreshToken);
+    client.DEL(userId, (err, val) => { 
+      if (err) {
+        console.log(err.message);
+        throw createError.InternalServerError();
+      }
+      res.sendStatus(204);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
 
+
+// create token when old token is expired
+router.post("/token", async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) throw createError.BadRequest();
+    const userId = await verifyRefreshToken(refreshToken);
+    client.SET(
+      userId,
+      createRefreshToken(userId), "EX", 30 * 24 * 60 * 60, (err, replay) => {
+        if (err) {
+          throw createError.InternalServerError();
+        }
+        console.log("replay", replay);
+        res.send({
+          accessToken: createAccessToken(userId),
+          RefreshToken: createRefreshToken(userId),
+        });
+    }
+    );
+  } catch (err) {
+    next(err);
+  }
+});
+
+
+
+
+
+
+
+//  verify a Refresh token
+// const verifyRefreshToken = (refreshToken) => { 
+//   return new Promise((resolve, reject) => {
+//     jwt.verify(refreshToken, process.env.ACCESS_PRIVATE_TOKEN, (err, payload) => {
+//       if (err) return reject(createError.Unauthorized());
+//       const userId = payload.userId;
+//       client.GET(userId, (err, result) => {
+//          console.log("refreshToken", refreshToken);
+//          console.log("result", result);
+//         if(err){
+//           reject(createError.InternalServerError());
+//           return;
+//         } 
+//         if(refreshToken === result) return resolve(userId);
+//           reject(createError.Unauthorized());
+//       });
+//     });
+//    });
+// }
 
 //create access token and refresh token
 // const sendAccessToken = (req, res, accessToken) => {
@@ -139,11 +226,30 @@ router.post("/logout", async (req, res) => {
 });
 
 
-                                                                            
-
-router.delete("/delete", async (req, res, next) => {
-  res.send("delete route");
+// create a new refresh token when old token is expired
+router.post("/token", async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) return res.send({ accessToken: "" });
+  let payload = null;
+  try {
+    payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+  } catch (err) {
+    return res.send({ accessToken: "" });
+  }
+  const accessToken = createAccessToken(payload.userId);
+  const email = payload.email;
+  res.send({ accessToken, email });
 });
+
+
+// create access token and refresh token
+const sendAccessToken = (req, res, accessToken) => {
+  res.send({
+    accessToken,
+    email: req.user.email,
+  });
+};
+
 
 
   module.exports = router;
